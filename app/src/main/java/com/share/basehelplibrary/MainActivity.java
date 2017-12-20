@@ -5,7 +5,7 @@ import android.os.Bundle;
 
 import com.share.baselibrary.BaseAppCompactActivity;
 
-public class MainActivity extends BaseAppCompactActivity{
+public class MainActivity extends MyAppCompactActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
