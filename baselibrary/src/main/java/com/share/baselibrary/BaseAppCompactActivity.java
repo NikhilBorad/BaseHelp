@@ -218,8 +218,8 @@ public class BaseAppCompactActivity extends AppCompatActivity {
     }
 
     //For start progrss dialog
-    public void nbStartDialog(String message, boolean isCancelable) {
-        mProgressDialog = new ProgressDialog(this);
+    public void nbStartDialog(Context applicationContext,String message, boolean isCancelable) {
+        mProgressDialog = new ProgressDialog(applicationContext);
         mProgressDialog.setCancelable(isCancelable);
         mProgressDialog.setMessage(message);
         mProgressDialog.show();

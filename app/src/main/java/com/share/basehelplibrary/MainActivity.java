@@ -13,6 +13,7 @@ public class MainActivity extends MyAppCompactActivity{
         setContentView(R.layout.activity_main);
 
         nbSetUpActionBar("HOME");
+        nbStartDialog(MainActivity.this,"",false);
 
     }
 }
