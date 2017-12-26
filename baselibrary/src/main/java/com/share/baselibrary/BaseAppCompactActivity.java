@@ -1,6 +1,7 @@
 package com.share.baselibrary;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
@@ -14,6 +15,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
@@ -43,6 +45,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -132,6 +135,15 @@ public class BaseAppCompactActivity extends AppCompatActivity {
         customToast.show();
     }
 
+    //For Get the screen dimensions
+    public static int[] nbGetScreenSize(Activity activity) {
+        Point size = new Point();
+        WindowManager w = activity.getWindowManager();
+
+        w.getDefaultDisplay().getSize(size);
+        return new int[]{size.x, size.y};
+    }
+
     //For Alert your message
     public void nbAlertBox(String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -147,6 +159,7 @@ public class BaseAppCompactActivity extends AppCompatActivity {
                 .show();
     }
 
+    //For setActionbar title with back button
     public void nbSetUpActionBar(String Actiontitle) {
 //        getSupportActionBar().setTitle((Html.fromHtml("<ba <font color='#ffffff'>" + Actiontitle + "</font>")));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -164,6 +177,7 @@ public class BaseAppCompactActivity extends AppCompatActivity {
 
     }
 
+    //For setActionbar title
     public void nbSetUpActionBarHome(String Actiontitle) {
         getSupportActionBar().setTitle((Html.fromHtml("<ba <font color='#ffffff'>" + Actiontitle + "</font>")));
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
@@ -177,6 +191,25 @@ public class BaseAppCompactActivity extends AppCompatActivity {
         View v = inflator.inflate(R.layout.actionbar_titleview, null);
         ((TextView) v.findViewById(R.id.title)).setText(Actiontitle);
         getSupportActionBar().setCustomView(v);
+    }
+
+    //For hide Actionbar
+    public static void nbHideActionBar(Activity activity) {
+        // Call before calling setContentView();
+        if (activity != null) {
+            activity.getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
+            if (activity.getActionBar() != null) {
+                activity.getActionBar().hide();
+            }
+        }
+    }
+
+    //For FullScreen
+    public static void nbSetFullScreen(Activity activity) {
+        // Call before calling setContentView();
+        activity.getWindow()
+                .setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 
     //For hide keyborad
@@ -915,6 +948,12 @@ public class BaseAppCompactActivity extends AppCompatActivity {
         context.startActivity(
                 Intent.createChooser(intent, "Choose"));
     }
+
+    //For Disable screen capture
+    public static void nbDisableScreenshotFunctionality(Activity activity) {
+        activity.getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
+    }
+
 
 
 }
