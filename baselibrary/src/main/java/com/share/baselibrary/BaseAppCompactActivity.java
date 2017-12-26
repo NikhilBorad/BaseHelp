@@ -18,6 +18,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -53,6 +54,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
@@ -71,6 +74,7 @@ public class BaseAppCompactActivity extends AppCompatActivity {
     public SharedPreferences preferencesVal;
     public SharedPreferences.Editor editor;
     private ProgressDialog mProgressDialog;
+    private String FILE_NAME;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -218,7 +222,7 @@ public class BaseAppCompactActivity extends AppCompatActivity {
     }
 
     //For start progrss dialog
-    public void nbStartDialog(Context applicationContext,String message, boolean isCancelable) {
+    public void nbStartDialog(Context applicationContext, String message, boolean isCancelable) {
         mProgressDialog = new ProgressDialog(applicationContext);
         mProgressDialog.setCancelable(isCancelable);
         mProgressDialog.setMessage(message);
@@ -591,5 +595,86 @@ public class BaseAppCompactActivity extends AppCompatActivity {
         return model;
     }
 
+    //For image Download in Async
+    public void nbDownloadFromUrl(Context context, String imageURL, String fileName) {  //this is the downloader method
+
+        Context mContext = context;
+        FILE_NAME = fileName;
+        new DownloadFromURL().execute(imageURL);
+
+
+    }
+
+    class DownloadFromURL extends AsyncTask<String, String, String> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            nbToast("Image is Downloading. Please wait...");
+        }
+
+        @Override
+        protected String doInBackground(String... fileUrl) {
+            int count;
+            try {
+
+                File file = new File("/sdcard/" + FILE_NAME + ".jpg");
+                if (file.exists())
+                    file.delete();
+
+                URL url = new URL(fileUrl[0]);
+                URLConnection urlConnection = url.openConnection();
+                urlConnection.connect();
+                // show progress bar 0-100%
+                int fileLength = urlConnection.getContentLength();
+                InputStream inputStream = new BufferedInputStream(url.openStream(), 8192);
+                OutputStream outputStream = new FileOutputStream(file);
+
+                byte data[] = new byte[1024];
+                long total = 0;
+                while ((count = inputStream.read(data)) != -1) {
+                    total += count;
+                    publishProgress("" + (int) ((total * 100) / fileLength));
+                    outputStream.write(data, 0, count);
+                }
+                // flushing output
+                outputStream.flush();
+                // closing streams
+                outputStream.close();
+                inputStream.close();
+
+            } catch (Exception e) {
+                Log.e("Error: ", e.getMessage());
+            }
+            return null;
+        }
+
+
+        @Override
+        protected void onPostExecute(String file_url) {
+            nbToast("Image saved on this device");
+        }
+    }
+
+    public void nbShowNoInternet() {
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getApplicationContext());
+        LayoutInflater inflater = getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.no_internet_dialog, null);
+
+        dialogBuilder.setView(dialogView);
+        final AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        alertDialog.setCancelable(false);
+
+        dialogView.findViewById(R.id.txtOkay).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alertDialog.dismiss();
+            }
+        });
+
+        alertDialog.show();
+
+    }
 
 }

@@ -5,7 +5,7 @@ import android.os.Bundle;
 
 import com.share.baselibrary.BaseAppCompactActivity;
 
-public class MainActivity extends MyAppCompactActivity{
+public class MainActivity extends MyAppCompactActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -13,7 +13,8 @@ public class MainActivity extends MyAppCompactActivity{
         setContentView(R.layout.activity_main);
 
         nbSetUpActionBar("HOME");
-        nbStartDialog(MainActivity.this,"",false);
 
+        nbToast("HEllo Happy people.");
+        nbToast("Have a Good day :) ");
     }
 }
