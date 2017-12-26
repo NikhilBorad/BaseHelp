@@ -1,17 +1,22 @@
 package com.share.baselibrary;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -30,6 +35,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.text.Html;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.util.Patterns;
@@ -45,6 +51,7 @@ import android.widget.Toast;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -52,6 +59,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -61,6 +69,7 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -193,6 +202,44 @@ public class BaseAppCompactActivity extends AppCompatActivity {
                         return true;
                     }
                 }
+            }
+        }
+        return false;
+    }
+
+    //For check GPS Enabled or not
+    public static boolean nbIsGpsEnabled(Context context) {
+        LocationManager lm = (LocationManager) context
+                .getSystemService(Context.LOCATION_SERVICE);
+        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+    //For check Wifi connected or not
+    public static boolean nbIsWifiConnected(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetInfo != null
+                && activeNetInfo.getType() == ConnectivityManager.TYPE_WIFI;
+    }
+
+    //For check 3G service running or not
+    public static boolean nbIs3G(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetInfo != null
+                && activeNetInfo.getType() == ConnectivityManager.TYPE_MOBILE;
+    }
+
+    //For check 4G service running or not
+    public static boolean nbIs4G(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetInfo = connectivityManager.getActiveNetworkInfo();
+        if (activeNetInfo != null && activeNetInfo.isConnectedOrConnecting()) {
+            if (activeNetInfo.getType() == TelephonyManager.NETWORK_TYPE_LTE) {
+                return true;
             }
         }
         return false;
@@ -437,11 +484,17 @@ public class BaseAppCompactActivity extends AppCompatActivity {
     }
 
     //For message
-    public void nbSendMessage(String stringToCall) {
-        Uri smsUri = Uri.parse("smsto:" + stringToCall);
-        Intent intentsms = new Intent(Intent.ACTION_SENDTO, smsUri);
-        intentsms.putExtra("sms_body", "");
-        startActivity(intentsms);
+    public static void sendMessage(Context activity, String phoneNumber,
+                                   String smsContent) {
+        if (phoneNumber == null || phoneNumber.length() < 4) {
+            return;
+        }
+        Uri uri = Uri.parse("smsto:" + phoneNumber);
+        Intent it = new Intent(Intent.ACTION_SENDTO, uri);
+        it.putExtra("sms_body", smsContent);
+        it.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        activity.startActivity(it);
+
     }
 
     //For date conversion
@@ -655,6 +708,7 @@ public class BaseAppCompactActivity extends AppCompatActivity {
         }
     }
 
+    //For download image from url
     public void nbShowNoInternet() {
 
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getApplicationContext());
@@ -676,5 +730,191 @@ public class BaseAppCompactActivity extends AppCompatActivity {
         alertDialog.show();
 
     }
+
+    //For Install apk(File & Uri)
+    public static void nbInstallApk(Context context, Uri file) {
+        Intent intent = new Intent();
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setDataAndType(file, "application/vnd.android.package-archive");
+        context.startActivity(intent);
+    }
+
+    //For Uninstall apk
+    public static void nbUninstallApk(Context context, String packageName) {
+        Intent intent = new Intent(Intent.ACTION_DELETE);
+        Uri packageURI = Uri.parse("package:" + packageName);
+        intent.setData(packageURI);
+        context.startActivity(intent);
+    }
+
+    //For Checking Service running or not
+    public static boolean nbIsServiceRunning(Context context, String className) {
+        boolean isRunning = false;
+        ActivityManager activityManager = (ActivityManager) context
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningServiceInfo> servicesList = activityManager
+                .getRunningServices(Integer.MAX_VALUE);
+        for (ActivityManager.RunningServiceInfo si : servicesList) {
+            if (className.equals(si.service.getClassName())) {
+                isRunning = true;
+            }
+        }
+        return isRunning;
+    }
+
+    //For Stop Service
+    public static boolean nbStopRunningService(Context context, String className) {
+        Intent intent_service = null;
+        boolean ret = false;
+        try {
+            intent_service = new Intent(context, Class.forName(className));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (intent_service != null) {
+            ret = context.stopService(intent_service);
+        }
+        return ret;
+    }
+
+    //For check App is on Background or not
+    public static boolean nbIsApplicationInBackground(Context context) {
+        ActivityManager am = (ActivityManager) context
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo> taskList = am.getRunningTasks(1);
+        if (taskList != null && !taskList.isEmpty()) {
+            ComponentName topActivity = taskList.get(0).topActivity;
+            if (topActivity != null
+                    && !topActivity.getPackageName().equals(
+                    context.getPackageName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //For getting Bitmap from any view
+    public static Bitmap nbGetBitmapFromView(View view) {
+        Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(),
+                Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        view.layout(view.getLeft(), view.getTop(), view.getRight(),
+                view.getBottom());
+        view.draw(canvas);
+
+        return bitmap;
+    }
+
+    //For has SdCard or not
+    public static boolean nbHasSDCard() {
+
+        String status = Environment.getExternalStorageState();
+        return status.equals(Environment.MEDIA_MOUNTED);
+    }
+
+    //For get file size
+    public static String nbGetFileSize(File file) {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(file);
+            int length = fis.available();
+            if (length >= 1073741824) {
+                return String.format("%.2f GB", length * 1.0 / 1073741824);
+            } else if (length >= 1048576) {
+                return String.format("%.2f MB", length * 1.0 / 1048576);
+            } else {
+                return String.format("%.2f KB", length * 1.0 / 1024);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return "none";
+    }
+
+    //For getting file from Asset folder
+    public static String nbGetFileFromAssets(Context context, String fileName) {
+        if (context == null || TextUtils.isEmpty(fileName)) {
+            return null;
+        }
+
+        StringBuilder s = new StringBuilder("");
+        try {
+            InputStreamReader in = new InputStreamReader(context.getResources().getAssets().open(fileName));
+            BufferedReader br = new BufferedReader(in);
+            String line;
+            while ((line = br.readLine()) != null) {
+                s.append(line);
+            }
+            return s.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    //For getting file from Raw folder
+    public static String nbGeFileFromRaw(Context context, int resId) {
+        if (context == null) {
+            return null;
+        }
+
+        StringBuilder s = new StringBuilder();
+        try {
+            InputStreamReader in = new InputStreamReader(context.getResources().openRawResource(resId));
+            BufferedReader br = new BufferedReader(in);
+            String line;
+            while ((line = br.readLine()) != null) {
+                s.append(line);
+            }
+            return s.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    //For text to Html
+    public static String nbAddTextToHtml(String string) {
+        return "<font color=\"red\">" + string + "</font>";
+    }
+
+    //For check Screen Oriented
+    public static boolean nbIsLandscape(Context context) {
+        return context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+    }
+
+    //For check Screen Oriented
+    public static boolean nbIsPortrait(Context context) {
+        return context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+    }
+
+    //For Share Image
+    public static void nbShareImage(Context context, Uri uri, String title) {
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+        shareIntent.setType("image/jpeg");
+        context.startActivity(Intent.createChooser(shareIntent, title));
+    }
+
+    //For Share Text
+    public static void nbShareText(Context context, String extraText) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Text");
+        intent.putExtra(Intent.EXTRA_TEXT, extraText);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(
+                Intent.createChooser(intent, "Choose"));
+    }
+
 
 }
