@@ -26,7 +26,7 @@ In your app's build.gradle file include as :
 ```
 dependencies{
     //Other dependecies...
-    compile 'com.github.nikhilborad:basehelp:<latest-version>'
+    compile 'com.github.nikhilborad:basehelp:1.02'
 }
 ```
 
