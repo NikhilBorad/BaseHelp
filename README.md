@@ -32,7 +32,7 @@ dependencies{
 
 # Usage
 
-for use this library you have to extend BaseAppCompactActivity to your class
+Now, any of your activity extends AppCompactActivity. So basically you need to do is replace AppCompactActivity with BaseAppCompactActivity to your class
 ```
 public class MainActivity extends BaseAppCompactActivity{
 
