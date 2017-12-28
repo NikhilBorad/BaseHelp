@@ -1,5 +1,6 @@
 # BaseHelp
 Some base features for android app. Boost up your developement.
+BaseHelp is a Time saver & easy to use library for Android. It encapsulates the functions commonly used in Android development which have complete demo and unit test. Using its encapsulated methods can greatly improve development efficiency.
 
 Happy coding.
 
@@ -26,13 +27,13 @@ In your app's build.gradle file include as :
 ```
 dependencies{
     //Other dependecies...
-    compile 'com.github.nikhilborad:basehelp:<latest-version>'
+    compile 'com.github.nikhilborad:basehelp:1.02'
 }
 ```
 
 # Usage
 
-for use this library you have to extend BaseAppCompactActivity to your class
+Now, any of your activity extends AppCompactActivity. So basically you need to do is replace AppCompactActivity with BaseAppCompactActivity to your class
 ```
 public class MainActivity extends BaseAppCompactActivity{
 
@@ -45,3 +46,6 @@ public class MainActivity extends BaseAppCompactActivity{
 After successfully done, type nb and hit ctrl+space and all available methods from this library will show up.
 
 To be more precise I put "nb" prefix to all methods name.
+
+
+**Please make sure to request appropriate runtime permisions on Android Marshmallow (SDK 23) and above**
