@@ -34,7 +34,7 @@ dependencies{
 
 Now, any of your activity extends AppCompactActivity. So basically you need to do is replace AppCompactActivity with BaseAppCompactActivity to your class
 ```
-public class MainActivity extends BaseAppCompactActivity{
+public class MainActivity extends **BaseAppCompactActivity**{
 
     //...
     nbSetUpActionBar("HOME");
