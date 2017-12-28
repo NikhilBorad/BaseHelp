@@ -46,3 +46,6 @@ public class MainActivity extends BaseAppCompactActivity{
 After successfully done, type nb and hit ctrl+space and all available methods from this library will show up.
 
 To be more precise I put "nb" prefix to all methods name.
+
+
+**Please make sure to request appropriate runtime permisions on Android Marshmallow (SDK 23) and above**
