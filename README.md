@@ -1,5 +1,6 @@
 # BaseHelp
 Some base features for android app. Boost up your developement.
+BaseHelp is a Time saver & easy to use library for Android. It encapsulates the functions commonly used in Android development which have complete demo and unit test. Using its encapsulated methods can greatly improve development efficiency.
 
 Happy coding.
 
